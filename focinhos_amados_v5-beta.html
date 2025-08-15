@@ -1,0 +1,530 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <!--
+  PROJECT: Focinhos Amados • Agendamento Offline (v0.1)
+  VERSION: v1.0 (2025-08-15)
+  PRINCIPLES: Single-File, Native-First, Offline, Layman-Editable
+  QUICK EDIT: Search for "EDIT ZONE" and change text/options
+
+  6-STEP MIGRATION GUIDE
+  1) Troque nome, telefone e cores na CONFIG e :root
+  2) Atualize a lista de serviços (nomes, descrições e preços se desejar)
+  3) Ajuste campos/labels dos Pets e do Tutor conforme sua operação
+  4) Personalize textos de microcopy e emojis na CONFIG.msg
+  5) Teste o envio via WhatsApp (Android e iPhone) e revise os avisos
+  6) Versão: incremente a tag VERSION e anote mudanças no cabeçalho
+  -->
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="format-detection" content="telephone=no" />
+  <title>Focinhos Amados • v0.1 • Agendamento via WhatsApp (Offline)</title>
+  <style>
+    :root{
+      /* EDIT ZONE: CORES DA MARCA */
+      --brand:#029935; /* verde confiança */
+      --accent:#FE0000; /* vermelho ação */
+      --ink:#030302; /* texto principal */
+      --paper:#FFFCFE; /* fundo claro */
+      --muted:#666666; /* infos secundárias */
+      --stroke:#ececec; --focus:#1c6ef2; --shadow:0 8px 24px rgba(0,0,0,.06);
+      --radius:14px; --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{margin:0;background:var(--paper);color:var(--ink);font:16px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,Ubuntu,"Helvetica Neue",Arial}
+    .wrap{max-width:1024px;margin:0 auto;padding:18px clamp(14px,3vw,28px)}
+    header{text-align:center;margin:4px 0 12px}
+    header h1{margin:.25rem 0;font-size:clamp(22px,5.6vw,34px)}
+    header p{margin:0;color:var(--muted)}
+    .pill{display:inline-block;padding:6px 10px;border-radius:999px;background:#fff;border:1px solid var(--stroke);font-size:13px}
+
+    .topbar{position:sticky;top:0;z-index:20;background:#fff;border-bottom:1px solid var(--stroke)}
+    .topbar-inner{max-width:1024px;margin:0 auto;display:flex;gap:8px;align-items:center;justify-content:space-between;padding:10px 14px}
+    .hint{color:var(--muted);font-size:13px}
+
+    .btn{display:inline-flex;align-items:center;gap:8px;justify-content:center;padding:10px 12px;border-radius:12px;border:1px solid var(--stroke);cursor:pointer;font-weight:700;background:#fff}
+    .btn-primary{background:var(--brand);color:#fff;border:0}
+    .btn-ghost{border:1px dashed var(--stroke);color:#666;background:#fff}
+    .btn-danger{background:#fff;color:var(--accent);border-color:#ffd5d8}
+    .btn-dark{background:#030302;color:#fff;border:0}
+
+    .grid{display:grid;gap:12px}
+    @media(min-width:980px){ .grid{grid-template-columns:2fr 1fr} }
+
+    .card{background:#fff;border:1px solid var(--stroke);border-radius:var(--radius);box-shadow:var(--shadow);padding:clamp(14px,2.6vw,20px)}
+    .card h2{margin:0 0 10px;font-size:18px;display:flex;align-items:center;gap:8px}
+    fieldset{border:0;margin:0;padding:0}
+    label{display:block;font-weight:600;margin-bottom:6px}
+    input[type="text"],input[type="tel"],input[type="time"],input[type="number"],textarea,select{
+      width:100%;padding:12px;border-radius:12px;border:1px solid var(--stroke);background:#fff;font-size:15px
+    }
+    textarea{min-height:84px;resize:vertical}
+    input:focus,select:focus,textarea:focus,button:focus{outline:3px solid color-mix(in oklab,var(--focus) 65%,transparent);outline-offset:2px}
+    .row{display:grid;grid-template-columns:1fr;gap:10px}
+    @media(min-width:760px){ .row{grid-template-columns:1fr 1fr} }
+
+    .chips{display:flex;flex-wrap:wrap;gap:8px}
+    .chip{display:inline-flex;align-items:center;gap:8px;padding:10px 12px;border:1px solid var(--stroke);border-radius:999px;background:#fff;user-select:none}
+    .chip input{accent-color:var(--brand)}
+    .chip:has(input:checked){border-color:var(--brand)}
+
+    .services{display:grid;gap:10px}
+    .item{display:grid;grid-template-columns:1fr auto auto;gap:10px;align-items:center;border:1px solid var(--stroke);border-radius:12px;padding:10px 12px;background:#fff}
+    .price{color:var(--brand);font-weight:700}
+
+    .pets{display:grid;gap:10px}
+    .pet-card{border:1px solid var(--stroke);border-radius:12px;padding:10px;background:#fff}
+    .pet-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
+
+    .actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+
+    .stepper{display:flex;gap:8px;justify-content:center;margin:10px 0}
+    .step{padding:6px 10px;border:1px solid var(--stroke);border-radius:999px;font-size:13px;background:#fff}
+    .step.is-on{background:var(--brand);border-color:var(--brand);color:#fff}
+
+    .notice{margin-top:10px;padding:10px;border:1px dashed #ffd48a;background:#fff8e1;border-radius:12px;color:#634300}
+    .preview{width:100%;min-height:160px;white-space:pre-wrap;border:1px dashed var(--stroke);border-radius:12px;padding:10px;background:#fff;font-family:var(--mono);font-size:13px}
+
+    .hide{display:none !important}
+    footer{color:var(--muted);font-size:12px;text-align:center;margin:18px 0 8px}
+  </style>
+</head>
+<body>
+  <div class="topbar">
+    <div class="topbar-inner">
+      <div class="hint">Compatibilidade iOS: use campos simples. Se o WhatsApp abrir em webview, utilize o botão <b>Copiar</b> e cole na conversa.</div>
+      <div class="actions">
+        <button id="btn-clear-all" class="btn btn-danger">Limpar tudo</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="wrap">
+    <header>
+      <h1 id="app-title">Focinhos Amados</h1>
+      <p id="app-sub">Agende com carinho e rapidez 🐶🐱</p>
+      <div class="pill">WhatsApp: <strong id="wa-label">(31) 9 8233-9672</strong></div>
+      <div class="stepper" role="tablist" aria-label="Etapas">
+        <div class="step is-on" id="s1">1) Serviço</div>
+        <div class="step" id="s2">2) Dados</div>
+        <div class="step" id="s3">3) Prévia</div>
+      </div>
+    </header>
+
+    <div class="grid">
+      <!-- ETAPA 1: SERVIÇOS -->
+      <section class="card" id="step-1">
+        <h2>Escolha o serviço principal 🐾</h2>
+        <fieldset class="services" id="svc-list"></fieldset>
+        <div class="actions">
+          <button class="btn btn-primary" id="next-1">Continuar</button>
+        </div>
+      </section>
+
+      <!-- LATERAL: PRÉVIA RÁPIDA -->
+      <aside class="card" id="side-preview">
+        <h2>Resumo rápido</h2>
+        <div id="mini" class="preview" aria-live="polite"></div>
+      </aside>
+    </div>
+
+    <!-- ETAPA 2: DADOS DO TUTOR E PETS -->
+    <section class="card" id="step-2" style="margin-top:12px">
+      <h2>Informe os dados do tutor e dos pets</h2>
+      <div class="row">
+        <div>
+          <label for="tutor-nome">Nome completo do tutor</label>
+          <input id="tutor-nome" type="text" placeholder="Ex.: Juliana Silva">
+        </div>
+        <div>
+          <label for="tutor-telefone">Telefone do tutor (WhatsApp)</label>
+          <input id="tutor-telefone" type="tel" placeholder="Ex.: (31) 9 8233-9672">
+        </div>
+      </div>
+      <div class="row">
+        <div>
+          <label for="endereco">Endereço</label>
+          <input id="endereco" type="text" placeholder="Rua, número, complemento">
+        </div>
+        <div>
+          <label for="bairro">Bairro</label>
+          <input id="bairro" type="text" placeholder="Ex.: Centro">
+        </div>
+      </div>
+      <div class="row">
+        <div>
+          <label for="ref">Ponto de referência</label>
+          <input id="ref" type="text" placeholder="Ex.: Perto da praça X">
+        </div>
+        <div>
+          <label for="hora">Horário desejado</label>
+          <input id="hora" type="time">
+        </div>
+      </div>
+      <div class="row">
+        <div>
+          <label for="pagamento">Forma de pagamento</label>
+          <select id="pagamento">
+            <option value="">Selecione…</option>
+            <option>PIX</option>
+            <option>Dinheiro</option>
+            <option>Cartão de débito</option>
+            <option>Cartão de crédito</option>
+          </select>
+        </div>
+        <div id="troco-wrap" style="display:none">
+          <label for="troco">Troco para (R$)</label>
+          <input id="troco" type="number" inputmode="numeric" placeholder="Ex.: 100">
+        </div>
+      </div>
+
+      <hr style="border:none;border-top:1px dashed var(--stroke);margin:12px 0" />
+
+      <h3>Pets</h3>
+      <div class="actions">
+        <button class="btn" id="btn-add-pet">+ Adicionar pet</button>
+      </div>
+      <div class="pets" id="pets"></div>
+
+      <div class="notice"><b>Dica:</b> use <b>Duplicar</b> para criar outro pet parecido e edite só o que mudou. 🦴</div>
+
+      <div class="actions">
+        <button class="btn" id="back-2">Voltar</button>
+        <button class="btn btn-primary" id="next-2">Revisar e enviar</button>
+      </div>
+    </section>
+
+    <!-- ETAPA 3: PRÉVIA E ENVIO -->
+    <section class="card" id="step-3" style="margin-top:12px">
+      <h2>Prévia da mensagem 💬</h2>
+      <div id="preview" class="preview"></div>
+      <div class="notice">
+        📦 <b>Delivery / Táxi dog:</b> a <u>taxa</u> será informada no WhatsApp conforme a região. <br/>
+        📎 Para enviar <b>foto do pet</b>, anexe na conversa após o envio desta mensagem.
+      </div>
+      <div class="actions">
+        <button class="btn" id="edit-service">Editar serviço</button>
+        <button class="btn" id="edit-data">Editar dados</button>
+        <button class="btn" id="btn-copy">Copiar</button>
+        <button class="btn btn-primary" id="btn-wa">Enviar pelo WhatsApp</button>
+      </div>
+      <div id="fb" class="hint" aria-live="polite"></div>
+    </section>
+
+    <footer>
+      <small id="wa-number" data-phone="5531982339672">Focinhos Amados • v0.1 • uso local/offline</small>
+    </footer>
+  </div>
+
+<script>
+// ================================
+// EDIT ZONE: CONFIGURAÇÃO GERAL
+// ================================
+const CONFIG = {
+  identidade: {
+    nome: "Focinhos Amados",
+    sub: "Agende com carinho e rapidez 🐶🐱",
+    whatsappE164: "5531982339672", // E.164: 55 + DDD + número
+    whatsappLabel: "(31) 9 8233-9672"
+  },
+  servicos: [
+    { id:"banho", nome:"Banho", desc:"Higiene completa e cheirinho gostoso.", valor:null },
+    { id:"banho_tosa", nome:"Banho e Tosa", desc:"Banho + tosa com muito cuidado.", valor:null },
+    { id:"delivery", nome:"Delivery", desc:"Busca e entrega em domicílio.", valor:null, aviso:"Taxa informada no WhatsApp" },
+    { id:"taxi", nome:"Táxi dog", desc:"Transporte com conforto e segurança.", valor:null, aviso:"Consulte taxa" }
+  ],
+  msg: {
+    titulo: "🐾 *Agendamento – Focinhos Amados*",
+    carinho: "Obrigada pelo contato! Vamos cuidar com amor do seu pet.",
+    taxa: "Taxa de delivery/táxi informada no WhatsApp conforme sua região.",
+    notaPIX: "Pagamentos via PIX são confirmados rapidamente."
+  }
+};
+
+// ================================
+// FUNÇÕES UTILITÁRIAS (puras)
+// ================================
+const NL = "\n", BULLET = "•";
+const byId = id => document.getElementById(id);
+const fmt = v => (v==null || v==='') ? "" : Number(v).toLocaleString("pt-BR",{style:"currency",currency:"BRL"});
+const clamp = (n,min,max)=> Math.max(min,Math.min(max,n));
+const uid = ()=> Date.now().toString(36)+Math.random().toString(36).slice(2,7);
+
+// ================================
+// ESTADO (mantido simples) + storage
+// ================================
+const STORAGE_KEY = "fa_v01_state";
+let state = {
+  servico: null,
+  tutor: { nome:"", telefone:"", endereco:"", bairro:"", ref:"", hora:"", pagamento:"", trocoPara:"" },
+  pets: []
+};
+
+function saveLocal(){ try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }catch(e){} }
+function loadLocal(){ try{ const s = JSON.parse(localStorage.getItem(STORAGE_KEY)||"null"); if(s) state=s; }catch(e){} }
+
+// ================================
+// RENDERIZAÇÃO
+// ================================
+function renderStepper(step){
+  ["s1","s2","s3"].forEach((id,idx)=> byId(id).classList.toggle("is-on", idx+1===step));
+}
+
+function renderServicos(){
+  const box = byId("svc-list"); box.innerHTML = "";
+  CONFIG.servicos.forEach(s=>{
+    const id = `svc-${s.id}`;
+    const row = document.createElement("div"); row.className = "item";
+    const lab = document.createElement("label"); lab.htmlFor = id; lab.textContent = s.nome + (s.valor?` — ${fmt(s.valor)}`:" ");
+    const desc = document.createElement("div"); desc.className = "hint"; desc.textContent = s.desc + (s.aviso?` • ${s.aviso}`:"");
+    const input = document.createElement("input"); input.type = "radio"; input.name = "servico"; input.id = id; input.value = s.id;
+    const price = document.createElement("span"); price.className = "price"; price.textContent = s.valor? fmt(s.valor):"";
+    row.append(lab, price, input, desc); box.append(row);
+  });
+  if(state.servico){ const el = document.querySelector(`input[name=servico][value=${state.servico}]`); if(el) el.checked=true; }
+}
+
+function addPetCard(pet){
+  const p = pet || { id:uid(), nome:"", porte:"", raca:"", obs:"" };
+  state.pets.push(p); saveLocal();
+  renderPets();
+}
+
+function duplicatePet(id){
+  const ref = state.pets.find(x=>x.id===id); if(!ref) return;
+  const clone = { ...ref, id:uid(), nome: ref.nome+" (cópia)" };
+  state.pets.push(clone); saveLocal(); renderPets();
+}
+
+function removePet(id){ state.pets = state.pets.filter(x=>x.id!==id); saveLocal(); renderPets(); renderPreview(); }
+
+function renderPets(){
+  const box = byId("pets"); box.innerHTML="";
+  state.pets.forEach(p=>{
+    const card = document.createElement("div"); card.className = "pet-card"; card.dataset.id = p.id;
+    const head = document.createElement("div"); head.className = "pet-head";
+    const h = document.createElement("strong"); h.textContent = p.nome || "Pet sem nome";
+    const btns = document.createElement("div");
+    const bDup = document.createElement("button"); bDup.className="btn"; bDup.textContent="Duplicar"; bDup.onclick=()=>duplicatePet(p.id);
+    const bDel = document.createElement("button"); bDel.className="btn btn-danger"; bDel.textContent="Remover"; bDel.onclick=()=>removePet(p.id);
+    btns.append(bDup,bDel); head.append(h,btns);
+
+    const g = document.createElement("div"); g.className="row";
+    g.innerHTML = `
+      <div>
+        <label>Nome do pet</label>
+        <input type="text" placeholder="Ex.: Thor" value="${p.nome}">
+      </div>
+      <div>
+        <label>Porte</label>
+        <select>
+          <option value="">Selecione…</option>
+          <option ${p.porte==="P"?"selected":""}>P</option>
+          <option ${p.porte==="M"?"selected":""}>M</option>
+          <option ${p.porte==="G"?"selected":""}>G</option>
+        </select>
+      </div>
+      <div>
+        <label>Raça</label>
+        <input type="text" placeholder="Ex.: Shih-tzu" value="${p.raca}">
+      </div>
+      <div>
+        <label>Observações</label>
+        <input type="text" placeholder="Alergias, preferências…" value="${p.obs}">
+      </div>`;
+
+    // listeners
+    const [inpNome, selPorte, inpRaca, inpObs] = g.querySelectorAll("input,select");
+    inpNome.oninput = e=>{ p.nome = e.target.value; h.textContent = p.nome || "Pet sem nome"; saveLocal(); renderPreview(); };
+    selPorte.onchange = e=>{ p.porte = e.target.value; saveLocal(); renderPreview(); };
+    inpRaca.oninput = e=>{ p.raca = e.target.value; saveLocal(); renderPreview(); };
+    inpObs.oninput = e=>{ p.obs = e.target.value; saveLocal(); renderPreview(); };
+
+    card.append(head,g); box.append(card);
+  });
+}
+
+function collectTutor(){
+  const t = state.tutor;
+  t.nome = byId("tutor-nome").value.trim();
+  t.telefone = byId("tutor-telefone").value.trim();
+  t.endereco = byId("endereco").value.trim();
+  t.bairro = byId("bairro").value.trim();
+  t.ref = byId("ref").value.trim();
+  t.hora = byId("hora").value;
+  t.pagamento = byId("pagamento").value;
+  t.trocoPara = byId("troco").value;
+  saveLocal();
+}
+
+function renderTutor(){
+  const t = state.tutor;
+  byId("tutor-nome").value = t.nome||"";
+  byId("tutor-telefone").value = t.telefone||"";
+  byId("endereco").value = t.endereco||"";
+  byId("bairro").value = t.bairro||"";
+  byId("ref").value = t.ref||"";
+  byId("hora").value = t.hora||"";
+  byId("pagamento").value = t.pagamento||"";
+  byId("troco").value = t.trocoPara||"";
+  onPagamento();
+}
+
+function onPagamento(){ byId("troco-wrap").style.display = (byId("pagamento").value === "Dinheiro") ? "block" : "none"; }
+
+// ================================
+// VALIDAÇÃO LEVE
+// ================================
+function validateStep1(){
+  const chosen = document.querySelector('input[name="servico"]:checked');
+  if(!chosen){ feedback("Selecione um serviço para continuar.", "warn"); return false; }
+  state.servico = chosen.value; saveLocal(); return true;
+}
+
+function validateStep2(){
+  collectTutor();
+  const t = state.tutor;
+  const msgs = [];
+  if(!t.nome) msgs.push("Informe o nome do tutor.");
+  if(!t.endereco) msgs.push("Informe o endereço.");
+  if(!t.pagamento) msgs.push("Escolha a forma de pagamento.");
+  if(state.pets.length===0) msgs.push("Adicione pelo menos 1 pet.");
+  if(msgs.length){ feedback(msgs.join(" "), "err"); return false; }
+  return true;
+}
+
+// ================================
+// MENSAGEM (mini + completa)
+// ================================
+function mini(){
+  const svc = CONFIG.servicos.find(x=>x.id===state.servico);
+  const linhas = [];
+  if(svc) linhas.push(`Serviço: ${svc.nome}`);
+  if(state.pets.length) linhas.push(`Pets: ${state.pets.map(p=>p.nome||"(sem nome)").join(', ')}`);
+  if(state.tutor.endereco) linhas.push(`Endereço: ${state.tutor.endereco}`);
+  return linhas.join(NL);
+}
+
+function montarMensagem(){
+  const svc = CONFIG.servicos.find(x=>x.id===state.servico);
+  const t = state.tutor;
+  const L = [];
+  L.push(CONFIG.msg.titulo);
+  L.push(`${BULLET} Serviço: ${svc?svc.nome:"-"}`);
+  if(svc?.aviso) L.push(`${BULLET} Aviso: ${svc.aviso}`);
+  L.push("");
+
+  state.pets.forEach((p,idx)=>{
+    L.push(`🐶 Pet #${idx+1}`);
+    if(p.nome) L.push(`${BULLET} Nome: ${p.nome}`);
+    if(p.porte) L.push(`${BULLET} Porte: ${p.porte}`);
+    if(p.raca) L.push(`${BULLET} Raça: ${p.raca}`);
+    if(p.obs)  L.push(`${BULLET} Obs.: ${p.obs}`);
+    L.push("");
+  });
+
+  L.push(`👤 Tutor`);
+  if(t.nome) L.push(`${BULLET} Nome: ${t.nome}`);
+  const enderecoFull = [t.endereco, t.bairro?` – ${t.bairro}`:"", t.ref?` (Ref.: ${t.ref})`:""].join(" ").replace(/\s+/g," ").trim();
+  if(enderecoFull) L.push(`${BULLET} Endereço: ${enderecoFull}`);
+  if(t.hora) L.push(`${BULLET} Horário: ${t.hora}`);
+  if(t.pagamento) L.push(`${BULLET} Pagamento: ${t.pagamento}`);
+  if(t.pagamento === "PIX") L.push(`${BULLET} Nota: ${CONFIG.msg.notaPIX}`);
+  if(t.pagamento === "Dinheiro" && t.trocoPara){
+    const x = Number(String(t.trocoPara).replace(",","."));
+    if(!Number.isNaN(x)) L.push(`${BULLET} Troco para: R$ ${x.toFixed(2)}`);
+  }
+
+  L.push("");
+  L.push(`💚 ${CONFIG.msg.carinho}`);
+  L.push(`📦 ${CONFIG.msg.taxa}`);
+
+  return L.join(NL).replace(/\n{3,}/g,"\n\n").trim();
+}
+
+function renderPreview(){ byId("mini").textContent = mini(); byId("preview").textContent = montarMensagem(); }
+
+// ================================
+// FEEDBACK & AÇÕES
+// ================================
+function feedback(txt,t=""){ byId("fb").innerHTML = `<span class="${t}">${txt}</span>`; }
+
+function go(step){
+  renderStepper(step);
+  byId("step-1").classList.toggle("hide", step!==1);
+  byId("step-2").classList.toggle("hide", step!==2);
+  byId("step-3").classList.toggle("hide", step!==3);
+  window.scrollTo({top:0,behavior:"smooth"});
+}
+
+function abrirWhatsApp(){
+  const msg = montarMensagem(); if(!msg){ feedback("Nada para enviar.","warn"); return; }
+  const base = "https://wa.me/";
+  const phone = byId("wa-number").dataset.phone || CONFIG.identidade.whatsappE164 || "";
+  const url = (phone? base+phone+"?text=" : base+"?text=") + encodeURIComponent(msg);
+  window.open(url, "_blank", "noopener");
+  feedback("Abrindo WhatsApp…","ok");
+}
+
+async function copiar(){
+  const msg = montarMensagem(); if(!msg){ feedback("Nada para copiar.","warn"); return; }
+  try{ await navigator.clipboard.writeText(msg); feedback("Mensagem copiada.","ok"); }
+  catch{
+    const ta=document.createElement("textarea"); ta.value=msg; document.body.appendChild(ta); ta.select(); document.execCommand("copy"); document.body.removeChild(ta);
+    feedback("Mensagem copiada (compatibilidade).","ok");
+  }
+}
+
+function clearAll(){ state = { servico:null, tutor:{nome:"",telefone:"",endereco:"",bairro:"",ref:"",hora:"",pagamento:"",trocoPara:""}, pets:[] }; saveLocal(); init(true); }
+
+// ================================
+// INICIALIZAÇÃO
+// ================================
+function init(reset=false){
+  // identidade
+  byId("app-title").textContent = CONFIG.identidade.nome;
+  byId("app-sub").textContent = CONFIG.identidade.sub;
+  byId("wa-number").dataset.phone = CONFIG.identidade.whatsappE164;
+  byId("wa-label").textContent = CONFIG.identidade.whatsappLabel;
+
+  if(!reset){ loadLocal(); }
+
+  renderServicos(); renderTutor(); renderPets(); renderPreview();
+  go(state.servico?2:1);
+}
+
+// ================================
+// EVENTOS
+// ================================
+
+document.addEventListener("DOMContentLoaded", ()=>{
+  init();
+  // etapa 1
+  document.addEventListener("change", e=>{ if(e.target.name==="servico"){ state.servico = e.target.value; saveLocal(); renderPreview(); }});
+  byId("next-1").onclick = ()=>{ if(validateStep1()) go(2); };
+
+  // etapa 2
+  ["tutor-nome","tutor-telefone","endereco","bairro","ref","hora","pagamento","troco"].forEach(id=>{
+    const el = byId(id); if(!el) return; const evt = (el.tagName==="SELECT"||el.type==="time"||el.type==="number")?"change":"input";
+    el.addEventListener(evt, ()=>{ collectTutor(); renderPreview(); });
+  });
+  byId("pagamento").addEventListener("change", onPagamento);
+
+  byId("btn-add-pet").onclick = ()=>{ addPetCard(); };
+
+  byId("back-2").onclick = ()=> go(1);
+  byId("next-2").onclick = ()=>{ if(validateStep2()) go(3); };
+
+  // etapa 3
+  byId("edit-service").onclick = ()=> go(1);
+  byId("edit-data").onclick = ()=> go(2);
+  byId("btn-copy").onclick = copiar;
+  byId("btn-wa").onclick = abrirWhatsApp;
+
+  // topo
+  byId("btn-clear-all").onclick = clearAll;
+});
+</script>
+</body>
+</html>
