@@ -2,23 +2,23 @@
 <html lang="pt-BR">
 <head>
   <!--
-  PROJECT: Focinhos Amados • Agendamento Offline (v0.1)
-  VERSION: v1.0 (2025-08-15)
+  PROJECT: Focinhos Amados • Agendamento Offline (v0.1.1)
+  VERSION: v1.1 (2025-08-15)
   PRINCIPLES: Single-File, Native-First, Offline, Layman-Editable
   QUICK EDIT: Search for "EDIT ZONE" and change text/options
 
-  6-STEP MIGRATION GUIDE
-  1) Troque nome, telefone e cores na CONFIG e :root
-  2) Atualize a lista de serviços (nomes, descrições e preços se desejar)
-  3) Ajuste campos/labels dos Pets e do Tutor conforme sua operação
-  4) Personalize textos de microcopy e emojis na CONFIG.msg
-  5) Teste o envio via WhatsApp (Android e iPhone) e revise os avisos
-  6) Versão: incremente a tag VERSION e anote mudanças no cabeçalho
+  MIGRATION GUIDE (6 passos)
+  1) Troque nome/telefone/cores em CONFIG e :root.
+  2) Configure "servicosPrincipais" (radio) e "addons" (checkbox) no CONFIG.
+  3) Ajuste campos do Tutor/Pets conforme sua operação.
+  4) Revise textos da mensagem (CONFIG.msg) e avisos sobre taxas.
+  5) Teste Android/iPhone: se WhatsApp abrir em webview no iOS, use Clicar em COPIAR e colar na conversa.
+  6) Publique: renomeie a versão no cabeçalho e salve.
   -->
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="format-detection" content="telephone=no" />
-  <title>Focinhos Amados • v0.1 • Agendamento via WhatsApp (Offline)</title>
+  <title>Focinhos Amados • v0.1.1 • Agendamento via WhatsApp (Offline)</title>
   <style>
     :root{
       /* EDIT ZONE: CORES DA MARCA */
@@ -93,7 +93,7 @@
 <body>
   <div class="topbar">
     <div class="topbar-inner">
-      <div class="hint">Compatibilidade iOS: use campos simples. Se o WhatsApp abrir em webview, utilize o botão <b>Copiar</b> e cole na conversa.</div>
+      <div class="hint">iPhone/WhatsApp: se abrir em webview, use <b>Copiar</b> e cole na conversa.</div>
       <div class="actions">
         <button id="btn-clear-all" class="btn btn-danger">Limpar tudo</button>
       </div>
@@ -106,17 +106,25 @@
       <p id="app-sub">Agende com carinho e rapidez 🐶🐱</p>
       <div class="pill">WhatsApp: <strong id="wa-label">(31) 9 8233-9672</strong></div>
       <div class="stepper" role="tablist" aria-label="Etapas">
-        <div class="step is-on" id="s1">1) Serviço</div>
+        <div class="step is-on" id="s1">1) Serviços</div>
         <div class="step" id="s2">2) Dados</div>
         <div class="step" id="s3">3) Prévia</div>
       </div>
     </header>
 
     <div class="grid">
-      <!-- ETAPA 1: SERVIÇOS -->
+      <!-- ETAPA 1: SERVIÇOS (principal + add-ons) -->
       <section class="card" id="step-1">
-        <h2>Escolha o serviço principal 🐾</h2>
-        <fieldset class="services" id="svc-list"></fieldset>
+        <h2>Escolha o serviço e adições 🐾</h2>
+        <section style="margin-bottom:10px">
+          <h3 style="margin:0 0 6px">Serviço principal (1 escolha)</h3>
+          <fieldset class="services" id="svc-principais"></fieldset>
+        </section>
+        <section style="margin-bottom:10px">
+          <h3 style="margin:0 0 6px">Adicionais (múltipla escolha)</h3>
+          <div class="chips" id="svc-addons"></div>
+          <p class="hint" style="margin-top:6px">💡 Dica: marque <b>Delivery</b> se quiser <i>buscar e levar</i> seu pet. Marque <b>Táxi dog</b> para transporte avulso. Taxas informadas no WhatsApp.</p>
+        </section>
         <div class="actions">
           <button class="btn btn-primary" id="next-1">Continuar</button>
         </div>
@@ -158,7 +166,7 @@
           <input id="ref" type="text" placeholder="Ex.: Perto da praça X">
         </div>
         <div>
-          <label for="hora">Horário desejado (escolha entre 13h e 17h)</label>
+          <label for="hora">Horário desejado</label>
           <input id="hora" type="time">
         </div>
       </div>
@@ -204,7 +212,7 @@
         📎 Para enviar <b>foto do pet</b>, anexe na conversa após o envio desta mensagem.
       </div>
       <div class="actions">
-        <button class="btn" id="edit-service">Editar serviço</button>
+        <button class="btn" id="edit-service">Editar serviços</button>
         <button class="btn" id="edit-data">Editar dados</button>
         <button class="btn" id="btn-copy">Copiar</button>
         <button class="btn btn-primary" id="btn-wa">Enviar pelo WhatsApp</button>
@@ -213,7 +221,7 @@
     </section>
 
     <footer>
-      <small id="wa-number" data-phone="5531982339672">Focinhos Amados • v0.1 • uso local/offline</small>
+      <small id="wa-number" data-phone="5531982339672">Focinhos Amados • v0.1.1 • uso local/offline</small>
     </footer>
   </div>
 
@@ -228,11 +236,17 @@ const CONFIG = {
     whatsappE164: "5531982339672", // E.164: 55 + DDD + número
     whatsappLabel: "(31) 9 8233-9672"
   },
-  servicos: [
-    { id:"banho", nome:"Banho", desc:"Higiene completa e cheirinho gostoso.", valor:null },
-    { id:"banho_tosa", nome:"Banho e Tosa", desc:"Banho + tosa com muito cuidado.", valor:null },
-    { id:"delivery", nome:"Delivery", desc:"Busca e entrega em domicílio.", valor:null, aviso:"Taxa informada no WhatsApp" },
-    { id:"taxi", nome:"Táxi dog", desc:"Transporte com conforto e segurança.", valor:null, aviso:"Consulte taxa" }
+  // Agora separando serviço principal (1 escolha) e add-ons (várias escolhas)
+  servicosPrincipais: [
+    { id:"banho", nome:"Banho", desc:"Higiene completa e cheirinho gostoso." },
+    { id:"banho_tosa", nome:"Banho e Tosa", desc:"Banho + tosa com muito cuidado." }
+  ],
+  addons: [
+    { id:"delivery", nome:"Delivery (buscar e levar)", desc:"Busca e entrega em domicílio.", aviso:"Taxa informada no WhatsApp" },
+    { id:"taxi", nome:"Táxi dog (avulso)", desc:"Transporte dedicado.", aviso:"Consulte taxa" },
+    { id:"hidratacao", nome:"Hidratação", desc:"Pelagem macia e brilhante." },
+    { id:"unhas", nome:"Corte de unhas", desc:"Conforto e segurança." },
+    { id:"ouvido", nome:"Limpeza de ouvido", desc:"Higiene e prevenção." }
   ],
   msg: {
     titulo: "🐾 *Agendamento – Focinhos Amados*",
@@ -247,16 +261,15 @@ const CONFIG = {
 // ================================
 const NL = "\n", BULLET = "•";
 const byId = id => document.getElementById(id);
-const fmt = v => (v==null || v==='') ? "" : Number(v).toLocaleString("pt-BR",{style:"currency",currency:"BRL"});
-const clamp = (n,min,max)=> Math.max(min,Math.min(max,n));
 const uid = ()=> Date.now().toString(36)+Math.random().toString(36).slice(2,7);
 
 // ================================
 // ESTADO (mantido simples) + storage
 // ================================
-const STORAGE_KEY = "fa_v01_state";
+const STORAGE_KEY = "fa_v011_state";
 let state = {
-  servico: null,
+  servico: null,      // principal
+  addons: [],         // array de ids
   tutor: { nome:"", telefone:"", endereco:"", bairro:"", ref:"", hora:"", pagamento:"", trocoPara:"" },
   pets: []
 };
@@ -267,36 +280,38 @@ function loadLocal(){ try{ const s = JSON.parse(localStorage.getItem(STORAGE_KEY
 // ================================
 // RENDERIZAÇÃO
 // ================================
-function renderStepper(step){
-  ["s1","s2","s3"].forEach((id,idx)=> byId(id).classList.toggle("is-on", idx+1===step));
-}
+function renderStepper(step){ ["s1","s2","s3"].forEach((id,idx)=> byId(id).classList.toggle("is-on", idx+1===step)); }
 
 function renderServicos(){
-  const box = byId("svc-list"); box.innerHTML = "";
-  CONFIG.servicos.forEach(s=>{
-    const id = `svc-${s.id}`;
+  // principais (radio)
+  const pbox = byId("svc-principais"); pbox.innerHTML="";
+  CONFIG.servicosPrincipais.forEach(s=>{
+    const id = `svc-p-${s.id}`;
     const row = document.createElement("div"); row.className = "item";
-    const lab = document.createElement("label"); lab.htmlFor = id; lab.textContent = s.nome + (s.valor?` — ${fmt(s.valor)}`:" ");
-    const desc = document.createElement("div"); desc.className = "hint"; desc.textContent = s.desc + (s.aviso?` • ${s.aviso}`:"");
-    const input = document.createElement("input"); input.type = "radio"; input.name = "servico"; input.id = id; input.value = s.id;
-    const price = document.createElement("span"); price.className = "price"; price.textContent = s.valor? fmt(s.valor):"";
-    row.append(lab, price, input, desc); box.append(row);
+    const lab = document.createElement("label"); lab.htmlFor = id; lab.textContent = s.nome;
+    const input = document.createElement("input"); input.type = "radio"; input.name="principal"; input.id=id; input.value=s.id;
+    const desc = document.createElement("div"); desc.className="hint"; desc.textContent = s.desc||"";
+    row.append(lab, document.createElement("span"), input, desc); pbox.append(row);
   });
-  if(state.servico){ const el = document.querySelector(`input[name=servico][value=${state.servico}]`); if(el) el.checked=true; }
+  if(state.servico){ const el = document.querySelector(`input[name=principal][value="${state.servico}"]`); if(el) el.checked=true; }
+
+  // add-ons (checkbox)
+  const abox = byId("svc-addons"); abox.innerHTML="";
+  CONFIG.addons.forEach(a=>{
+    const lbl = document.createElement("label"); lbl.className="chip";
+    const inp = document.createElement("input"); inp.type="checkbox"; inp.value=a.id; inp.checked = state.addons.includes(a.id);
+    const txt = a.nome + (a.aviso?" — "+a.aviso:"");
+    lbl.append(inp, document.createTextNode(txt));
+    abox.append(lbl);
+  });
 }
 
 function addPetCard(pet){
   const p = pet || { id:uid(), nome:"", porte:"", raca:"", obs:"" };
-  state.pets.push(p); saveLocal();
-  renderPets();
+  state.pets.push(p); saveLocal(); renderPets(); renderPreview();
 }
 
-function duplicatePet(id){
-  const ref = state.pets.find(x=>x.id===id); if(!ref) return;
-  const clone = { ...ref, id:uid(), nome: ref.nome+" (cópia)" };
-  state.pets.push(clone); saveLocal(); renderPets();
-}
-
+function duplicatePet(id){ const ref = state.pets.find(x=>x.id===id); if(!ref) return; const clone = { ...ref, id:uid(), nome: ref.nome+" (cópia)" }; state.pets.push(clone); saveLocal(); renderPets(); renderPreview(); }
 function removePet(id){ state.pets = state.pets.filter(x=>x.id!==id); saveLocal(); renderPets(); renderPreview(); }
 
 function renderPets(){
@@ -310,16 +325,16 @@ function renderPets(){
     const bDel = document.createElement("button"); bDel.className="btn btn-danger"; bDel.textContent="Remover"; bDel.onclick=()=>removePet(p.id);
     btns.append(bDup,bDel); head.append(h,btns);
 
-    const g = document.createElement("div"); g.className="row";
+    const g = document.createElement("div"); g.className = "row";
     g.innerHTML = `
       <div>
         <label>Nome do pet</label>
-        <input type="text" placeholder="Ex.: Thor" value="${p.nome}">
+        <input type=\"text\" placeholder=\"Ex.: Thor\" value=\"${p.nome}\">
       </div>
       <div>
         <label>Porte</label>
         <select>
-          <option value="">Selecione…</option>
+          <option value=\"\">Selecione…</option>
           <option ${p.porte==="P"?"selected":""}>P</option>
           <option ${p.porte==="M"?"selected":""}>M</option>
           <option ${p.porte==="G"?"selected":""}>G</option>
@@ -327,14 +342,13 @@ function renderPets(){
       </div>
       <div>
         <label>Raça</label>
-        <input type="text" placeholder="Ex.: Shih-tzu" value="${p.raca}">
+        <input type=\"text\" placeholder=\"Ex.: Shih-tzu\" value=\"${p.raca}\">
       </div>
       <div>
         <label>Observações</label>
-        <input type="text" placeholder="Alergias, preferências…" value="${p.obs}">
+        <input type=\"text\" placeholder=\"Alergias, preferências…\" value=\"${p.obs}\">
       </div>`;
 
-    // listeners
     const [inpNome, selPorte, inpRaca, inpObs] = g.querySelectorAll("input,select");
     inpNome.oninput = e=>{ p.nome = e.target.value; h.textContent = p.nome || "Pet sem nome"; saveLocal(); renderPreview(); };
     selPorte.onchange = e=>{ p.porte = e.target.value; saveLocal(); renderPreview(); };
@@ -377,9 +391,12 @@ function onPagamento(){ byId("troco-wrap").style.display = (byId("pagamento").va
 // VALIDAÇÃO LEVE
 // ================================
 function validateStep1(){
-  const chosen = document.querySelector('input[name="servico"]:checked');
-  if(!chosen){ feedback("Selecione um serviço para continuar.", "warn"); return false; }
-  state.servico = chosen.value; saveLocal(); return true;
+  const chosen = document.querySelector('input[name="principal"]:checked');
+  if(!chosen){ feedback("Selecione um serviço principal (Banho ou Banho e Tosa).", "warn"); return false; }
+  state.servico = chosen.value;
+  // addons
+  const add = Array.from(document.querySelectorAll('#svc-addons input[type="checkbox"]:checked')).map(i=>i.value);
+  state.addons = add; saveLocal(); return true;
 }
 
 function validateStep2(){
@@ -398,21 +415,26 @@ function validateStep2(){
 // MENSAGEM (mini + completa)
 // ================================
 function mini(){
-  const svc = CONFIG.servicos.find(x=>x.id===state.servico);
+  const principal = CONFIG.servicosPrincipais.find(x=>x.id===state.servico);
+  const addons = CONFIG.addons.filter(a=>state.addons.includes(a.id)).map(a=>a.nome);
   const linhas = [];
-  if(svc) linhas.push(`Serviço: ${svc.nome}`);
+  if(principal) linhas.push(`Serviço: ${principal.nome}`);
+  if(addons.length) linhas.push(`Add-ons: ${addons.join(', ')}`);
   if(state.pets.length) linhas.push(`Pets: ${state.pets.map(p=>p.nome||"(sem nome)").join(', ')}`);
   if(state.tutor.endereco) linhas.push(`Endereço: ${state.tutor.endereco}`);
   return linhas.join(NL);
 }
 
 function montarMensagem(){
-  const svc = CONFIG.servicos.find(x=>x.id===state.servico);
+  const principal = CONFIG.servicosPrincipais.find(x=>x.id===state.servico);
+  const addons = CONFIG.addons.filter(a=>state.addons.includes(a.id));
   const t = state.tutor;
   const L = [];
   L.push(CONFIG.msg.titulo);
-  L.push(`${BULLET} Serviço: ${svc?svc.nome:"-"}`);
-  if(svc?.aviso) L.push(`${BULLET} Aviso: ${svc.aviso}`);
+  L.push(`${BULLET} Serviço: ${principal?principal.nome:"-"}`);
+  if(addons.length){ L.push(`${BULLET} Adicionais: ${addons.map(a=>a.nome).join(', ')}`); }
+  const temLogistica = addons.some(a=> a.id==="delivery" || a.id==="taxi");
+  if(temLogistica) L.push(`${BULLET} Aviso: ${CONFIG.msg.taxa}`);
   L.push("");
 
   state.pets.forEach((p,idx)=>{
@@ -438,7 +460,7 @@ function montarMensagem(){
 
   L.push("");
   L.push(`💚 ${CONFIG.msg.carinho}`);
-  L.push(`📦 ${CONFIG.msg.taxa}`);
+  if(temLogistica) L.push(`📦 ${CONFIG.msg.taxa}`);
 
   return L.join(NL).replace(/\n{3,}/g,"\n\n").trim();
 }
@@ -450,39 +472,18 @@ function renderPreview(){ byId("mini").textContent = mini(); byId("preview").tex
 // ================================
 function feedback(txt,t=""){ byId("fb").innerHTML = `<span class="${t}">${txt}</span>`; }
 
-function go(step){
-  renderStepper(step);
-  byId("step-1").classList.toggle("hide", step!==1);
-  byId("step-2").classList.toggle("hide", step!==2);
-  byId("step-3").classList.toggle("hide", step!==3);
-  window.scrollTo({top:0,behavior:"smooth"});
-}
+function go(step){ renderStepper(step); byId("step-1").classList.toggle("hide", step!==1); byId("step-2").classList.toggle("hide", step!==2); byId("step-3").classList.toggle("hide", step!==3); window.scrollTo({top:0,behavior:"smooth"}); }
 
-function abrirWhatsApp(){
-  const msg = montarMensagem(); if(!msg){ feedback("Nada para enviar.","warn"); return; }
-  const base = "https://wa.me/";
-  const phone = byId("wa-number").dataset.phone || CONFIG.identidade.whatsappE164 || "";
-  const url = (phone? base+phone+"?text=" : base+"?text=") + encodeURIComponent(msg);
-  window.open(url, "_blank", "noopener");
-  feedback("Abrindo WhatsApp…","ok");
-}
+function abrirWhatsApp(){ const msg = montarMensagem(); if(!msg){ feedback("Nada para enviar.","warn"); return; } const base = "https://wa.me/"; const phone = byId("wa-number").dataset.phone || CONFIG.identidade.whatsappE164 || ""; const url = (phone? base+phone+"?text=" : base+"?text=") + encodeURIComponent(msg); window.open(url, "_blank", "noopener"); feedback("Abrindo WhatsApp…","ok"); }
 
-async function copiar(){
-  const msg = montarMensagem(); if(!msg){ feedback("Nada para copiar.","warn"); return; }
-  try{ await navigator.clipboard.writeText(msg); feedback("Mensagem copiada.","ok"); }
-  catch{
-    const ta=document.createElement("textarea"); ta.value=msg; document.body.appendChild(ta); ta.select(); document.execCommand("copy"); document.body.removeChild(ta);
-    feedback("Mensagem copiada (compatibilidade).","ok");
-  }
-}
+async function copiar(){ const msg = montarMensagem(); if(!msg){ feedback("Nada para copiar.","warn"); return; } try{ await navigator.clipboard.writeText(msg); feedback("Mensagem copiada.","ok"); } catch{ const ta=document.createElement("textarea"); ta.value=msg; document.body.appendChild(ta); ta.select(); document.execCommand("copy"); document.body.removeChild(ta); feedback("Mensagem copiada (compatibilidade).","ok"); } }
 
-function clearAll(){ state = { servico:null, tutor:{nome:"",telefone:"",endereco:"",bairro:"",ref:"",hora:"",pagamento:"",trocoPara:""}, pets:[] }; saveLocal(); init(true); }
+function clearAll(){ state = { servico:null, addons:[], tutor:{nome:"",telefone:"",endereco:"",bairro:"",ref:"",hora:"",pagamento:"",trocoPara:""}, pets:[] }; saveLocal(); init(true); }
 
 // ================================
 // INICIALIZAÇÃO
 // ================================
 function init(reset=false){
-  // identidade
   byId("app-title").textContent = CONFIG.identidade.nome;
   byId("app-sub").textContent = CONFIG.identidade.sub;
   byId("wa-number").dataset.phone = CONFIG.identidade.whatsappE164;
@@ -501,18 +502,17 @@ function init(reset=false){
 document.addEventListener("DOMContentLoaded", ()=>{
   init();
   // etapa 1
-  document.addEventListener("change", e=>{ if(e.target.name==="servico"){ state.servico = e.target.value; saveLocal(); renderPreview(); }});
+  document.addEventListener("change", e=>{
+    if(e.target.name==="principal"){ state.servico = e.target.value; saveLocal(); renderPreview(); }
+    if(e.target.closest('#svc-addons')){ const add = Array.from(document.querySelectorAll('#svc-addons input[type="checkbox"]:checked')).map(i=>i.value); state.addons = add; saveLocal(); renderPreview(); }
+  });
   byId("next-1").onclick = ()=>{ if(validateStep1()) go(2); };
 
   // etapa 2
-  ["tutor-nome","tutor-telefone","endereco","bairro","ref","hora","pagamento","troco"].forEach(id=>{
-    const el = byId(id); if(!el) return; const evt = (el.tagName==="SELECT"||el.type==="time"||el.type==="number")?"change":"input";
-    el.addEventListener(evt, ()=>{ collectTutor(); renderPreview(); });
-  });
+  ["tutor-nome","tutor-telefone","endereco","bairro","ref","hora","pagamento","troco"].forEach(id=>{ const el = byId(id); if(!el) return; const evt = (el.tagName==="SELECT"||el.type==="time"||el.type==="number")?"change":"input"; el.addEventListener(evt, ()=>{ collectTutor(); renderPreview(); }); });
   byId("pagamento").addEventListener("change", onPagamento);
 
   byId("btn-add-pet").onclick = ()=>{ addPetCard(); };
-
   byId("back-2").onclick = ()=> go(1);
   byId("next-2").onclick = ()=>{ if(validateStep2()) go(3); };
 
